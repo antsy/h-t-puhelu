@@ -44,10 +44,13 @@ gulp.task('build_production', () => {
       // https://github.com/terser-js/terser#compress-options
       toplevel: true,
       booleans_as_integers: true,
-      ecma: 6, // try 5
+      ecma: 8, // try 5
       keep_fargs: false,
       pure_getters: true,
-      passes: 2,
+      passes: 4,
+      arguments: true,
+      hoist_funs: true,
+      unsafe: true,
     },
     output: {
       quote_style: 3,
@@ -83,11 +86,11 @@ gulp.task('filesize', (cb) => {
   const stats = fs.statSync('./build/index.html');
   const fileSizeInBytes = stats.size;
   if (fileSizeInBytes < targetSize) {
-    console.log(`Output is now \x1b[32m${fileSizeInBytes}\x1b[0m bytes`);
+    console.log(`Output is now \x1b[32m\x1b[1m${fileSizeInBytes}\x1b[0m bytes`);
   } else if(fileSizeInBytes === targetSize) {
     console.log(`Output is now \x1b[32m\x1b[1m${fileSizeInBytes}\x1b[0m bytes`);
   } else {
-    console.log(`Output is now \x1b[31m\x1b[5m${fileSizeInBytes}\x1b[0m bytes`);
+    console.log(`Output is now \x1b[31m\x1b[5m\x1b[1m${fileSizeInBytes}\x1b[0m bytes`);
   }
   return cb();
 });
