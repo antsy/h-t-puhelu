@@ -19,7 +19,7 @@ var win = this; // window == this in global context
 var canvas = document.getElementById('x');
 var gl = canvas.getContext('webgl');
 var i = 0;
-for($ in gl)gl[i++]=gl[$];
+for ($ in gl) gl[i++] = gl[$];
 console.log(gl);
 var width = canvas.width = win.innerWidth;
 var height = canvas.height = win.innerHeight;
@@ -86,119 +86,119 @@ var createProgram = (vertexShader, fragmentShader) => {
   gl.deleteProgram(program); // DEBUG
 }
 
-  var identityMatrix = 33825..toString(2).split``; // =  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+var identityMatrix = 33825..toString(2).split``; // =  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 
-  /**
-   * Generates a look-at matrix with the given eye position, focal point, and up axis
-   *
-   * @param {mat4} out mat4 frustum matrix will be written into
-   * @param {vec3} eye Position of the viewer
-   * @param {vec3} center Point the viewer is looking at
-   * @param {vec3} up vec3 pointing up
-   * @returns {mat4} out
-   */
-  var lookAt = (out, eye, center, up) => {
-    var x0, x1, x2, y0, y1, y2, z0, z1, z2, len,
-        eyex = eye[0],
-        eyey = eye[1],
-        eyez = eye[2],
-        upx = up[0],
-        upy = up[1],
-        upz = up[2],
-        centerx = center[0],
-        centery = center[1],
-        centerz = center[2];
+/**
+ * Generates a look-at matrix with the given eye position, focal point, and up axis
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {vec3} eye Position of the viewer
+ * @param {vec3} center Point the viewer is looking at
+ * @param {vec3} up vec3 pointing up
+ * @returns {mat4} out
+ */
+var lookAt = (out, eye, center, up) => {
+  var x0, x1, x2, y0, y1, y2, z0, z1, z2, len,
+    eyex = eye[0],
+    eyey = eye[1],
+    eyez = eye[2],
+    upx = up[0],
+    upy = up[1],
+    upz = up[2],
+    centerx = center[0],
+    centery = center[1],
+    centerz = center[2];
 
-    /*if (absolute(eyex - centerx) < epsilon &&
-        absolute(eyey - centery) < epsilon &&
-        absolute(eyez - centerz) < epsilon) {
-        return identityMatrix;
-    }*/ // no fear
+  /*if (absolute(eyex - centerx) < epsilon &&
+      absolute(eyey - centery) < epsilon &&
+      absolute(eyez - centerz) < epsilon) {
+      return identityMatrix;
+  }*/ // no fear
 
-    z0 = eyex - centerx;
-    z1 = eyey - centery;
-    z2 = eyez - centerz;
+  z0 = eyex - centerx;
+  z1 = eyey - centery;
+  z2 = eyez - centerz;
 
-    len = 1 / sqrt(z0 * z0 + z1 * z1 + z2 * z2);
-    z0 *= len;
-    z1 *= len;
-    z2 *= len;
+  len = 1 / sqrt(z0 * z0 + z1 * z1 + z2 * z2);
+  z0 *= len;
+  z1 *= len;
+  z2 *= len;
 
-    x0 = upy * z2 - upz * z1;
-    x1 = upz * z0 - upx * z2;
-    x2 = upx * z1 - upy * z0;
-    len = sqrt(x0 * x0 + x1 * x1 + x2 * x2);
-    if (!len) {
-        x0 = 0;
-        x1 = 0;
-        x2 = 0;
-    } else {
-        len = 1 / len;
-        x0 *= len;
-        x1 *= len;
-        x2 *= len;
-    }
+  x0 = upy * z2 - upz * z1;
+  x1 = upz * z0 - upx * z2;
+  x2 = upx * z1 - upy * z0;
+  len = sqrt(x0 * x0 + x1 * x1 + x2 * x2);
+  if (!len) {
+    x0 = 0;
+    x1 = 0;
+    x2 = 0;
+  } else {
+    len = 1 / len;
+    x0 *= len;
+    x1 *= len;
+    x2 *= len;
+  }
 
-    y0 = z1 * x2 - z2 * x1;
-    y1 = z2 * x0 - z0 * x2;
-    y2 = z0 * x1 - z1 * x0;
+  y0 = z1 * x2 - z2 * x1;
+  y1 = z2 * x0 - z0 * x2;
+  y2 = z0 * x1 - z1 * x0;
 
-    len = sqrt(y0 * y0 + y1 * y1 + y2 * y2);
-    if (!len) {
-        y0 = 0;
-        y1 = 0;
-        y2 = 0;
-    } else {
-        len = 1 / len;
-        y0 *= len;
-        y1 *= len;
-        y2 *= len;
-    }
+  len = sqrt(y0 * y0 + y1 * y1 + y2 * y2);
+  if (!len) {
+    y0 = 0;
+    y1 = 0;
+    y2 = 0;
+  } else {
+    len = 1 / len;
+    y0 *= len;
+    y1 *= len;
+    y2 *= len;
+  }
 
-    out.fill(0);
-    out[0] = x0;
-    out[1] = y0;
-    out[2] = z0;
-    // 3 = 0
-    out[4] = x1;
-    out[5] = y1;
-    out[6] = z1;
-    // 7 = 0
-    out[8] = x2;
-    out[9] = y2;
-    out[10] = z2;
-    // 11 = 0
-    out[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
-    out[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
-    out[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
-    out[15] = 1;
+  out.fill(0);
+  out[0] = x0;
+  out[1] = y0;
+  out[2] = z0;
+  // 3 = 0
+  out[4] = x1;
+  out[5] = y1;
+  out[6] = z1;
+  // 7 = 0
+  out[8] = x2;
+  out[9] = y2;
+  out[10] = z2;
+  // 11 = 0
+  out[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
+  out[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
+  out[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
+  out[15] = 1;
 
-    return out;
+  return out;
 };
 
-  /**
-   * Generates a perspective projection matrix with the given bounds
-   *
-   * @param {mat4} out mat4 frustum matrix will be written into
-   * @param {number} fovy Vertical field of view in radians
-   * @param {number} aspect Aspect ratio. typically viewport width/height
-   * @param {number} near Near bound of the frustum
-   * @param {number} far Far bound of the frustum
-   * @returns {mat4} out
-   */
-  var perspective = (out, fovy, aspect, near, far) => {
-    out.fill(0); // ES6 rules!
-    var f = 1.0 / m.tan(fovy / 2),
-        nf = 1 / (near - far);
-    out[0] = f / aspect;
-    out[5] = f;
-    out[10] = (far + near) * nf;
-    out[11] = -1;
-    out[14] = (2 * far * near) * nf;
-    return out;
+/**
+ * Generates a perspective projection matrix with the given bounds
+ *
+ * @param {mat4} out mat4 frustum matrix will be written into
+ * @param {number} fovy Vertical field of view in radians
+ * @param {number} aspect Aspect ratio. typically viewport width/height
+ * @param {number} near Near bound of the frustum
+ * @param {number} far Far bound of the frustum
+ * @returns {mat4} out
+ */
+var perspective = (out, fovy, aspect, near, far) => {
+  out.fill(0); // ES6 rules!
+  var f = 1.0 / m.tan(fovy / 2),
+    nf = 1 / (near - far);
+  out[0] = f / aspect;
+  out[5] = f;
+  out[10] = (far + near) * nf;
+  out[11] = -1;
+  out[14] = (2 * far * near) * nf;
+  return out;
 };
 
-  /**
+/**
  * Rotates a mat4 by the given angle around the given axis
  *
  * @param {mat4} out the receiving matrix
@@ -233,23 +233,23 @@ var rotate = (out, a, rad, x, y, z) => {
   ]
 
   var n = 0;
-  for (var i = 0;i<9;i=i+3) {
-    for (var j = 0; j<4; j++) {
-      out[n] = a[j]*b[i] + a[4+j]*b[i+1] + a[8+j]*b[i+2];
+  for (var i = 0; i < 9; i = i + 3) {
+    for (var j = 0; j < 4; j++) {
+      out[n] = a[j] * b[i] + a[4 + j] * b[i + 1] + a[8 + j] * b[i + 2];
       n++;
     }
   }
 
   if (a !== out) { // If the source and destination differ, copy the unchanged last row
-      out[12] = a[12];
-      out[13] = a[13];
-      out[14] = a[14];
-      out[15] = a[15];
+    out[12] = a[12];
+    out[13] = a[13];
+    out[14] = a[14];
+    out[15] = a[15];
   }
   return out;
 };
 
-  /**
+/**
  * Multiplies two mat4's explicitly not using SIMD
  *
  * @param {mat4} out the receiving matrix
@@ -258,9 +258,9 @@ var rotate = (out, a, rad, x, y, z) => {
  * @returns {mat4} out
  */
 var multiply = (out, a, b) => {
-  for(var i=0;i<16;i=i+4) {
-    for(var j=0;j<4;j++) {
-      out[i+j] = b[i]*a[j] + b[i+1]*a[4+j] + b[i+2]*a[8+j] + b[i+3]*a[12+j];
+  for (var i = 0; i < 16; i = i + 4) {
+    for (var j = 0; j < 4; j++) {
+      out[i + j] = b[i] * a[j] + b[i + 1] * a[4 + j] + b[i + 2] * a[8 + j] + b[i + 3] * a[12 + j];
     }
   }
   return out;
@@ -294,8 +294,8 @@ var glStaticDrawConstant = 35044;
 var glFloatConstant = 5126;
 var glFalse; // =undefined
 
-var vertices = [-1,-1,1,1,-1,1,1,-1,-1,1,-1,1,-1,-1,1,-1,-1,-1,-1,-1,-1,-1,-1,1,-1,1,1,-1,1,-1,-1,1,-1,1,1,-1,1,-1,-1,-1,-1,-1,1,1,-1,1,1,1,1,-1,1,1,-1,-1,-1,1,-1,-1,1,1,1,1,1,1,1,-1,1,1,1,-1,1,1,-1,1,2.39947,1,1,2.39947,-1,1,1,1,-1,1,1,1,1,1,1,1,-1,1,1,-1,1,2.39947,-1,-1,2.39947,-1,-1,4.0671,-1,1,4.0671,1,-1,2.39947,1,-1,1,3.15249,-1,1,3.15249,-1,2.39947,-1,1,1,1,-1,2.39947,1,-2.38009,2.39947,1,-2.38009,1,1,1,4.0671,-1,1,4.0671,-1,-1,4.0671,1,-1,4.0671,-1,-1,2.39947,1,-1,2.39947,1,-1,4.0671,-1,-1,4.0671,-1,1,4.0671,1,1,4.0671,1,1,2.39947,1,1,4.0671,1,-1,4.0671,-1,-2.38009,1,1,-2.38009,1,1,-2.38009,2.39947,-1,-2.38009,2.39947,1,-1,2.39947,-1,-1,2.39947,-1,-2.38009,2.39947,1,-2.38009,2.39947,-1,-2.38009,1,-1,-2.38009,2.39947,-1,-1,1,1,-1,1,1,-2.38009,1,-1,-2.38009,1,3.15249,-1,1,3.15249,1,1,3.15249,1,2.39947,3.15249,-1,2.39947,1,-1,1,1,1,1,3.15249,1,1,3.15249,-1,1,1,2.53678,1,3.15249,2.53678,1,1,1,2.39947,1,-1,2.39947,3.15249,-1,2.39947,3.15249,1,2.39947,1,2.53678,1,1,2.53678,2.39947,3.15249,2.53678,2.39947,3.15249,2.53678,1,3.15249,2.53678,1,3.15249,2.53678,2.39947,3.15249,2.53678,2.39947,1,2.53678,2.39947,1,1,1,1,1,2.39947,1,2.53678,2.39947,1,2.53678,1];
-var indices = [2,3,4,2,4,5,6,7,8,6,8,9,39,7,32,32,7,64,39,32,31,31,32,33,32,64,65,31,33,34,10,11,12,10,12,13,14,15,16,14,16,17,16,40,41,16,41,42,40,53,54,40,54,55,18,19,20,18,20,21,22,23,24,22,24,25,25,24,51,25,51,52,35,36,37,35,37,38,43,44,45,43,45,46,47,48,49,47,49,50,56,57,58,56,58,59,60,61,62,60,62,63,66,67,68,66,68,69,70,71,72,70,72,73,72,71,88,72,88,89,74,75,76,74,76,77,76,75,78,76,78,79,80,81,82,80,82,83,80,83,90,80,90,91,84,85,86,84,86,87,92,93,94,92,94,95];
+var vertices = [-1, -1, 1, 1, -1, 1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, -1, 1, 2.39947, 1, 1, 2.39947, -1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1, 2.39947, -1, -1, 2.39947, -1, -1, 4.0671, -1, 1, 4.0671, 1, -1, 2.39947, 1, -1, 1, 3.15249, -1, 1, 3.15249, -1, 2.39947, -1, 1, 1, 1, -1, 2.39947, 1, -2.38009, 2.39947, 1, -2.38009, 1, 1, 1, 4.0671, -1, 1, 4.0671, -1, -1, 4.0671, 1, -1, 4.0671, -1, -1, 2.39947, 1, -1, 2.39947, 1, -1, 4.0671, -1, -1, 4.0671, -1, 1, 4.0671, 1, 1, 4.0671, 1, 1, 2.39947, 1, 1, 4.0671, 1, -1, 4.0671, -1, -2.38009, 1, 1, -2.38009, 1, 1, -2.38009, 2.39947, -1, -2.38009, 2.39947, 1, -1, 2.39947, -1, -1, 2.39947, -1, -2.38009, 2.39947, 1, -2.38009, 2.39947, -1, -2.38009, 1, -1, -2.38009, 2.39947, -1, -1, 1, 1, -1, 1, 1, -2.38009, 1, -1, -2.38009, 1, 3.15249, -1, 1, 3.15249, 1, 1, 3.15249, 1, 2.39947, 3.15249, -1, 2.39947, 1, -1, 1, 1, 1, 1, 3.15249, 1, 1, 3.15249, -1, 1, 1, 2.53678, 1, 3.15249, 2.53678, 1, 1, 1, 2.39947, 1, -1, 2.39947, 3.15249, -1, 2.39947, 3.15249, 1, 2.39947, 1, 2.53678, 1, 1, 2.53678, 2.39947, 3.15249, 2.53678, 2.39947, 3.15249, 2.53678, 1, 3.15249, 2.53678, 1, 3.15249, 2.53678, 2.39947, 3.15249, 2.53678, 2.39947, 1, 2.53678, 2.39947, 1, 1, 1, 1, 1, 2.39947, 1, 2.53678, 2.39947, 1, 2.53678, 1];
+var indices = [2, 3, 4, 2, 4, 5, 6, 7, 8, 6, 8, 9, 39, 7, 32, 32, 7, 64, 39, 32, 31, 31, 32, 33, 32, 64, 65, 31, 33, 34, 10, 11, 12, 10, 12, 13, 14, 15, 16, 14, 16, 17, 16, 40, 41, 16, 41, 42, 40, 53, 54, 40, 54, 55, 18, 19, 20, 18, 20, 21, 22, 23, 24, 22, 24, 25, 25, 24, 51, 25, 51, 52, 35, 36, 37, 35, 37, 38, 43, 44, 45, 43, 45, 46, 47, 48, 49, 47, 49, 50, 56, 57, 58, 56, 58, 59, 60, 61, 62, 60, 62, 63, 66, 67, 68, 66, 68, 69, 70, 71, 72, 70, 72, 73, 72, 71, 88, 72, 88, 89, 74, 75, 76, 74, 76, 77, 76, 75, 78, 76, 78, 79, 80, 81, 82, 80, 82, 83, 80, 83, 90, 80, 90, 91, 84, 85, 86, 84, 86, 87, 92, 93, 94, 92, 94, 95];
 
 var c = 'createBuffer';
 var vertexBuffer = gl[c]();
@@ -305,7 +305,7 @@ var ul = 'getUniformLocation';
 var matWorldUniformLocation = gl[ul](program, 'w');
 var matViewUniformLocation = gl[ul](program, 'v');
 var matProjUniformLocation = gl[ul](program, 'p');
-var e  = 'enableVertexAttribArray';
+var e = 'enableVertexAttribArray';
 var worldMatrix = new floatArray(16);
 var viewMatrix = new floatArray(16);
 var projMatrix = new floatArray(16);
@@ -345,8 +345,8 @@ var xRotationMatrix = new floatArray(16);
 var yRotationMatrix = new floatArray(16);
 
 var testi = " abcdefghijklmnop üýþÿ" // DEBUG
-for(var c in testi) { // DEBUG
-  var number = (testi.charCodeAt(c)- 32) / 223 // DEBUG
+for (var c in testi) { // DEBUG
+  var number = (testi.charCodeAt(c) - 32) / 223 // DEBUG
   console.log(c, testi[c], number.toFixed(4), number); // DEBUG
 } // DEBUG
 
@@ -385,5 +385,5 @@ r() // DEBUG
 
 console.log(2 ** 14)
 console.log(~~1.8)
-console.log((() => { var x = m.sin(new Date().getMilliseconds()) * 10000; return x-~~x;})())
+console.log((() => { var x = m.sin(new Date().getMilliseconds()) * 10000; return x-~~x; })())
 
