@@ -6,6 +6,7 @@ const deleteLines = require('gulp-delete-lines');
 const rename = require('gulp-rename');
 const stripDebug = require('gulp-strip-debug');
 const fs = require('fs');
+const jscrush = require('./lib/jscrush');
 
 /**
  * Development build
@@ -72,6 +73,7 @@ gulp.task('build_production', () => {
     }))
     .pipe(stripDebug()) // There actually is an npm package just for removing console.log's from your source
     .pipe(terser(options)) // Minify with Terser
+    .pipe(jscrush()) // Compress with JSCrush
     .pipe(headerfooter.header(header))
     .pipe(headerfooter.footer(footer))
     .pipe(rename('index.html'))
