@@ -7,6 +7,33 @@ const rename = require('gulp-rename');
 const stripDebug = require('gulp-strip-debug');
 const fs = require('fs');
 const jscrush = require('./lib/jscrush');
+const crunchme = require('./lib/crunchme');
+const jssfx = require('./lib/jssfx')
+const packify = require('./lib/ba-packify');
+
+/**
+ * Build without any compression (just merge files)
+ */
+gulp.task('build_raw', () => {
+
+  const files = [
+    './src/index.js',
+  ];
+
+  const header = fs.readFileSync('./src/header.html');
+  const footer = fs.readFileSync('./src/footer.html');
+
+  return gulp.src(files)
+    .pipe(deleteLines({
+      'filters': [
+      /PRODUCTION/i, // Strip out lines only meant for production build
+      ]
+    }))
+    .pipe(headerfooter.header(header))
+    .pipe(headerfooter.footer(footer))
+    .pipe(rename('index.html'))
+    .pipe(gulp.dest('./build'));
+});
 
 /**
  * Development build
@@ -45,7 +72,7 @@ gulp.task('build_production', () => {
       // https://github.com/terser-js/terser#compress-options
       toplevel: true,
       booleans_as_integers: true,
-      ecma: 8, // try 5
+      ecma: 6, // try 5
       keep_fargs: false,
       pure_getters: true,
       passes: 4,
@@ -55,7 +82,7 @@ gulp.task('build_production', () => {
     },
     output: {
       quote_style: 3,
-    }
+    },
   };
 
   const files = [
@@ -73,7 +100,10 @@ gulp.task('build_production', () => {
     }))
     .pipe(stripDebug()) // There actually is an npm package just for removing console.log's from your source
     .pipe(terser(options)) // Minify with Terser
-    .pipe(jscrush()) // Compress with JSCrush
+    .pipe(jscrush()) // Compress with JSCrush (best compression but sometimes produces output which won't unpack properly)
+    //.pipe(packify()) // Compress with ba-packify
+    //.pipe(crunchme()) // Compress with crunchme
+    //.pipe(jssfx()) // Compress with jssfx (be patient, this is slow!)
     .pipe(headerfooter.header(header))
     .pipe(headerfooter.footer(footer))
     .pipe(rename('index.html'))

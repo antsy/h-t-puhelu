@@ -3,6 +3,7 @@
   "scripts": {
     "build": "gulp build",
     "prod": "gulp prod",
+    "raw": "gulp build_raw",
     "watch": "gulp watch"
   },
   "devDependencies": {

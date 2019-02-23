@@ -1,19 +1,4 @@
 
-// Some neat resources:
-// https://github.com/acgessler/assimp2json
-// https://skalman.github.io/UglifyJS-online/
-// https://github.com/laurentlb/Shader_Minifier
-// http://marcgg.com/blog/2016/11/01/javascript-audio/
-// https://noisehack.com/generate-noise-web-audio-api/
-// https://www.keithmcmillen.com/blog/making-music-in-the-browser-web-audio-api-part-1/
-// http://www.cs.cornell.edu/courses/cs4620/2014fa/lectures/glsl1.pdf
-// https://www.youtube.com/watch?v=DhSRvxVQ5HM (WebGL Lighting (2 of 5) - Surface Normals))
-// https://www.youtube.com/watch?v=33gn3_khXxw (WebGL Tutorial 05 - Phong Lighting)
-// https://www.youtube.com/watch?v=jBqYTgaFDxU (blender basics)
-// https://codegolf.stackexchange.com/questions/37624/tips-for-golfing-in-ecmascript-6-and-above
-
-// https://medium.com/@omar4ur/flat-shading-in-webgl-with-playcanvas-a-quick-tip-97d1bd85258f
-// https://www.shadertoy.com/view/ldf3RN (bokeh blur)
 
 var win = this; // window == this in global context
 var canvas = document.getElementById('x');
@@ -87,94 +72,6 @@ var createProgram = (vertexShader, fragmentShader) => {
 }
 
 var identityMatrix = 33825..toString(2).split``; // =  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-
-/**
- * Generates a look-at matrix with the given eye position, focal point, and up axis
- *
- * @param {mat4} out mat4 frustum matrix will be written into
- * @param {vec3} eye Position of the viewer
- * @param {vec3} center Point the viewer is looking at
- * @param {vec3} up vec3 pointing up
- * @returns {mat4} out
- */
-var lookAt = (out, eye, center, up) => {
-  var x0, x1, x2, y0, y1, y2, z0, z1, z2, len,
-    eyex = eye[0],
-    eyey = eye[1],
-    eyez = eye[2],
-    upx = up[0],
-    upy = up[1],
-    upz = up[2],
-    centerx = center[0],
-    centery = center[1],
-    centerz = center[2];
-
-  /*if (absolute(eyex - centerx) < epsilon &&
-      absolute(eyey - centery) < epsilon &&
-      absolute(eyez - centerz) < epsilon) {
-      return identityMatrix;
-  }*/ // no fear
-
-  z0 = eyex - centerx;
-  z1 = eyey - centery;
-  z2 = eyez - centerz;
-
-  len = 1 / sqrt(z0 * z0 + z1 * z1 + z2 * z2);
-  z0 *= len;
-  z1 *= len;
-  z2 *= len;
-
-  x0 = upy * z2 - upz * z1;
-  x1 = upz * z0 - upx * z2;
-  x2 = upx * z1 - upy * z0;
-  len = sqrt(x0 * x0 + x1 * x1 + x2 * x2);
-  if (!len) {
-    x0 = 0;
-    x1 = 0;
-    x2 = 0;
-  } else {
-    len = 1 / len;
-    x0 *= len;
-    x1 *= len;
-    x2 *= len;
-  }
-
-  y0 = z1 * x2 - z2 * x1;
-  y1 = z2 * x0 - z0 * x2;
-  y2 = z0 * x1 - z1 * x0;
-
-  len = sqrt(y0 * y0 + y1 * y1 + y2 * y2);
-  if (!len) {
-    y0 = 0;
-    y1 = 0;
-    y2 = 0;
-  } else {
-    len = 1 / len;
-    y0 *= len;
-    y1 *= len;
-    y2 *= len;
-  }
-
-  out.fill(0);
-  out[0] = x0;
-  out[1] = y0;
-  out[2] = z0;
-  // 3 = 0
-  out[4] = x1;
-  out[5] = y1;
-  out[6] = z1;
-  // 7 = 0
-  out[8] = x2;
-  out[9] = y2;
-  out[10] = z2;
-  // 11 = 0
-  out[12] = -(x0 * eyex + x1 * eyey + x2 * eyez);
-  out[13] = -(y0 * eyex + y1 * eyey + y2 * eyez);
-  out[14] = -(z0 * eyex + z1 * eyey + z2 * eyez);
-  out[15] = 1;
-
-  return out;
-};
 
 /**
  * Generates a perspective projection matrix with the given bounds
@@ -307,7 +204,7 @@ var matViewUniformLocation = gl[ul](program, 'v');
 var matProjUniformLocation = gl[ul](program, 'p');
 var e = 'enableVertexAttribArray';
 var worldMatrix = new floatArray(16);
-var viewMatrix = new floatArray(16);
+var viewMatrix = [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, -8, 1];
 var projMatrix = new floatArray(16);
 
 gl[b = 'bindBuffer'](glArrayBufferConstant, vertexBuffer);
@@ -334,7 +231,6 @@ gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 // User program
 gl.useProgram(program);
 
-lookAt(viewMatrix, [0, 0, -8], [0, 0, 0], [0, 1, 0]);
 perspective(projMatrix, 0.8, aspectRatio, epsilon, 1e3);
 
 gl[u = 'uniformMatrix4fv'](matWorldUniformLocation, glFalse, worldMatrix);
@@ -378,6 +274,7 @@ s = () => {
   o.connect(audioContext.destination)
   o.frequency.value = 666
   o.start()
+  s = () => {}; // ':D
 }
 
 r() // DEBUG
