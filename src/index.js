@@ -10,10 +10,8 @@ var width = canvas.width = win.innerWidth;
 var height = canvas.height = win.innerHeight;
 var floatArray = Float32Array;
 
-var epsilon = 1e-6;
 var m = Math;
 
-var fc = `gl_FragCoord`;
 var fragmentShader = `
 precision mediump float;
 float rng( vec2 a ) { return fract( sin( a.x * 3433.8 + a.y * 3843.98 ) * 45933.8 ); }
@@ -23,17 +21,16 @@ void main() {
 float x=gl_FragCoord.x;
 float y=gl_FragCoord.y;
 vec2 v=vec2(x, y);
-gl_FragColor = vec4(${fc}.x * rng(vec2(rng(v), t)) / ${width}.0, ${fc}.y / ${height}.0 * mod(${fc}.y, 2.0), 0, 1);
+gl_FragColor = vec4(gl_FragCoord.x * rng(vec2(rng(v), t)) / ${width}.0, gl_FragCoord.y / ${height}.0 * mod(gl_FragCoord.y, 2.0), 0, 1);
 }`;
 
-var u4 = 'uniform mat4 ';
 var vertexShader = `precision mediump float;
 attribute vec3 vp;
 attribute vec2 vertTexCoord;
 varying vec2 fragTexCoord;
-${u4}w;
-${u4}v;
-${u4}p;
+uniform mat4 w;
+uniform mat4 v;
+uniform mat4 p;
 
 void main(){
 fragTexCoord = vertTexCoord;
@@ -188,7 +185,7 @@ gl.bufferData(
 //   console.log(c, testi[c], number.toFixed(4), number); // DEBUG
 // } // DEBUG
 
-// random object
+// test object
 //var vertices = [-1, -1, 1, 1, -1, 1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, -1, 1, 2.39947, 1, 1, 2.39947, -1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1, 2.39947, -1, -1, 2.39947, -1, -1, 4.0671, -1, 1, 4.0671, 1, -1, 2.39947, 1, -1, 1, 3.15249, -1, 1, 3.15249, -1, 2.39947, -1, 1, 1, 1, -1, 2.39947, 1, -2.38009, 2.39947, 1, -2.38009, 1, 1, 1, 4.0671, -1, 1, 4.0671, -1, -1, 4.0671, 1, -1, 4.0671, -1, -1, 2.39947, 1, -1, 2.39947, 1, -1, 4.0671, -1, -1, 4.0671, -1, 1, 4.0671, 1, 1, 4.0671, 1, 1, 2.39947, 1, 1, 4.0671, 1, -1, 4.0671, -1, -2.38009, 1, 1, -2.38009, 1, 1, -2.38009, 2.39947, -1, -2.38009, 2.39947, 1, -1, 2.39947, -1, -1, 2.39947, -1, -2.38009, 2.39947, 1, -2.38009, 2.39947, -1, -2.38009, 1, -1, -2.38009, 2.39947, -1, -1, 1, 1, -1, 1, 1, -2.38009, 1, -1, -2.38009, 1, 3.15249, -1, 1, 3.15249, 1, 1, 3.15249, 1, 2.39947, 3.15249, -1, 2.39947, 1, -1, 1, 1, 1, 1, 3.15249, 1, 1, 3.15249, -1, 1, 1, 2.53678, 1, 3.15249, 2.53678, 1, 1, 1, 2.39947, 1, -1, 2.39947, 3.15249, -1, 2.39947, 3.15249, 1, 2.39947, 1, 2.53678, 1, 1, 2.53678, 2.39947, 3.15249, 2.53678, 2.39947, 3.15249, 2.53678, 1, 3.15249, 2.53678, 1, 3.15249, 2.53678, 2.39947, 3.15249, 2.53678, 2.39947, 1, 2.53678, 2.39947, 1, 1, 1, 1, 1, 2.39947, 1, 2.53678, 2.39947, 1, 2.53678, 1];
 //var indices = [2, 3, 4, 2, 4, 5, 6, 7, 8, 6, 8, 9, 39, 7, 32, 32, 7, 64, 39, 32, 31, 31, 32, 33, 32, 64, 65, 31, 33, 34, 10, 11, 12, 10, 12, 13, 14, 15, 16, 14, 16, 17, 16, 40, 41, 16, 41, 42, 40, 53, 54, 40, 54, 55, 18, 19, 20, 18, 20, 21, 22, 23, 24, 22, 24, 25, 25, 24, 51, 25, 51, 52, 35, 36, 37, 35, 37, 38, 43, 44, 45, 43, 45, 46, 47, 48, 49, 47, 49, 50, 56, 57, 58, 56, 58, 59, 60, 61, 62, 60, 62, 63, 66, 67, 68, 66, 68, 69, 70, 71, 72, 70, 72, 73, 72, 71, 88, 72, 88, 89, 74, 75, 76, 74, 76, 77, 76, 75, 78, 76, 78, 79, 80, 81, 82, 80, 82, 83, 80, 83, 90, 80, 90, 91, 84, 85, 86, 84, 86, 87, 92, 93, 94, 92, 94, 95];
 // dude
@@ -199,8 +196,7 @@ var vertices = [];
 vertices[0] = [0.32,-1,0.4,0,-0.61,0.4,0,-0.61,0,0.32,-1,0,0.91,-1,0,0.53,-0.14,0,0.53,-0.14,0.4,0.91,-1,0.4,0.91,-1,0.4,0.53,-0.14,0.4,0,-0.61,0.4,0.32,-1,0.4,0.32,-1,0,0.91,-1,0,0.91,-1,0.4,0.32,-1,0.4,0.33,0.58,0.4,0.33,0.58,0,0.27,0.94,0,0.27,0.94,0.4,0.33,0.58,0,0.33,0.58,0.4,1,0.3,0.4,1,0.3,0,0,-0.61,0.4,0.33,0.58,0.4,0,0.42,0.4,0.27,0.94,0,0,1,0,0,1,0.4,0.27,0.94,0.4,0.27,0.94,0.4,0,1,0.4,1,0.01,0.4,1,0.01,0,1,0.3,0,1,0.3,0.4,0.53,-0.14,0.4,0.53,-0.14,0,1,0.01,0,1,0.01,0.4,1,0.01,0.4,1,0.3,0.4]
 indices = [0,1,2,0,2,3,4,5,6,4,6,7,8,9,10,8,10,11,24,9,25,25,9,41,24,25,26,26,25,31,25,41,42,26,31,32,12,13,14,12,14,15,16,17,18,16,18,19,20,21,22,20,22,23,27,28,29,27,29,30,33,34,35,33,35,36,37,38,39,37,39,40];
 vertices[1] = vertices[0].map((x, i) => i%3 ? x: -x) // mirror x & y
-//vertices[1] = vertices[0].map((x, i) => i%3||i%3+2==0 ? -x: x)
-//vertices[1] = vertices[0].map(x => -x); // mirror all
+
 
 var worldMatrix = new floatArray(16);
 var viewMatrix = [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, -4, 1];
@@ -216,15 +212,12 @@ var yRotationMatrix = new floatArray(16);
 
 var angle = 0;
 var startTime;
+
 r = () => {
   if (!startTime) {
     startTime = performance.now();
   }
 
-  var glArrayBufferConstant = 34962;
-  var glElementArrayBufferConstant = 34963;
-  var glStaticDrawConstant = 35044;
-  var glFloatConstant = 5126;
   var glFalse; // =undefined
 
   gl[315](0.6, 0.8, 1, 1) // 315: ƒ clearColor()
@@ -238,25 +231,27 @@ r = () => {
   multiply(worldMatrix, yRotationMatrix, xRotationMatrix);
   gl[422](matWorldUniformLocation, glFalse, worldMatrix); // 422: ƒ uniformMatrix4fv()
 
+  var vertexBuffer = [];
+  var indexBuffer = [];
   for (var i=0;i<vertices.length;i++) {
-    var vertexBuffer = [];
-    var indexBuffer = [];
     var positionAttributeLocation = gl[356](program, 'vp'); // 356: ƒ getAttribLocation()
 
     vertexBuffer[i] = gl[324](); // 324: ƒ createBuffer()
     indexBuffer[i] = gl[324]();
 
-    gl[302](glArrayBufferConstant, vertexBuffer[i]); // 302: ƒ bindBuffer()
-    gl[311](glArrayBufferConstant, new floatArray(vertices[i]), glStaticDrawConstant); // 311: ƒ bufferData()
+    // gl.StaticDrawConstant = 35044, gl.ArrayBufferConstant = 34962;
+    gl[302](34962, vertexBuffer[i]); // 302: ƒ bindBuffer()
+    gl[311](34962, new floatArray(vertices[i]), 35044); // 311: ƒ bufferData()
 
-    gl[302](glElementArrayBufferConstant, indexBuffer[i]); // 302: ƒ bindBuffer()
-    gl[311](glElementArrayBufferConstant, new Uint16Array(indices), glStaticDrawConstant); // 311: ƒ bufferData()
+    // gl.ElementArrayBuffer = 34963;
+    gl[302](34963, indexBuffer[i]); // 302: ƒ bindBuffer()
+    gl[311](34963, new Uint16Array(indices), 35044); // 311: ƒ bufferData()
 
-    gl[302](glArrayBufferConstant, vertexBuffer[i]); // 302: ƒ bindBuffer()
+    gl[302](34962, vertexBuffer[i]); // 302: ƒ bindBuffer()
     gl[433]( // 433: ƒ vertexAttribPointer()
       positionAttributeLocation, // Attribute location
       3, // Number of elements per attribute
-      glFloatConstant, // Type of elements (gl.FLOAT)
+      5126, // Type of elements (5126 = gl.FLOAT)
       glFalse,
       12, // Size of an individual vertex (3 * Float32Array.BYTES_PER_ELEMENT)
       0
@@ -268,7 +263,7 @@ r = () => {
     // User program
     gl[423](program); // 423: ƒ useProgram()
 
-    perspective(projMatrix, 0.8, epsilon, 1e3);
+    perspective(projMatrix, 0.8, 1e-6, 1e3); // 1e-6 is our epsilon value
 
     gl[422](matWorldUniformLocation, glFalse, worldMatrix); // 422: ƒ uniformMatrix4fv()
     gl[422](matViewUniformLocation, glFalse, viewMatrix); // 422: ƒ uniformMatrix4fv()
@@ -284,14 +279,19 @@ r = () => {
 }
 
 s = () => {
+  var audioContext = new AudioContext();
+  var o = audioContext.createOscillator();
   // sounds
-  var audioContext = new AudioContext()
-  var o = audioContext.createOscillator()
-  o.type = "sawtooth"
-  o.connect(audioContext.destination)
-  o.frequency.value = 666
-  o.start()
+  o.type = "sawtooth";
+  o.connect(audioContext.destination);
+  o.frequency.value = 666;
+  o.start();
   s = () => {}; // ':D
+  setInterval(() => {
+    var time = performance.now() - startTime;
+    o.detune.value = m.sin(time) * 100;
+    o.frequency.value = m.cos(time) * 50 + 500;
+  }, 100)
 }
 
 r() // DEBUG

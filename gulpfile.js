@@ -83,6 +83,9 @@ gulp.task('build_production', () => {
     output: {
       quote_style: 3,
     },
+    mangle: {
+      reserved: ['r', 's', '_', 'Y', '$']
+    }
   };
 
   const files = [
