@@ -3,44 +3,25 @@
 var win = this; // window == this in global context
 var canvas = document.getElementById('x');
 var gl = canvas.getContext('webgl');
-var i = 0;
-for (Z in gl) gl[i++] = gl[Z]; // Neat trick to shorten names of webgl functions
-console.log(gl); // and its results
+var i = j = 0;
+for (Z in gl) gl[Z[0]+Z[6]] = gl[Z]; // Neat trick to shorten (some of the) names of webgl functions
+// console.log(gl); // and its results
 var width = canvas.width = win.innerWidth;
 var height = canvas.height = win.innerHeight;
 var floatArray = Float32Array;
 
 var m = Math;
 
-var fragmentShader = `
-precision mediump float;
-float rng( vec2 a ) { return fract( sin( a.x * 3433.8 + a.y * 3843.98 ) * 45933.8 ); }
-uniform float t;
-
-void main() {
-float x=gl_FragCoord.x;
-float y=gl_FragCoord.y;
-vec2 v=vec2(x, y);
-gl_FragColor = vec4(gl_FragCoord.x * rng(vec2(rng(v), t)) / ${width}.0, gl_FragCoord.y / ${height}.0 * mod(gl_FragCoord.y, 2.0), 0, 1);
-}`;
-
-var vertexShader = `precision mediump float;
-attribute vec3 vp;
-attribute vec2 vertTexCoord;
-varying vec2 fragTexCoord;
-uniform mat4 w;
-uniform mat4 v;
-uniform mat4 p;
-
-void main(){
-fragTexCoord = vertTexCoord;
-gl_Position = p * v * w * vec4(vp, 1.0);
-}`;
-
+/**
+ * Helper function to compile shader
+ *
+ * @param {number} type    gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+ * @param {string} source  GLSL source code
+ */
 var createShader = (type, source) => {
-  var shader = gl[328](type); // 328: ƒ createShader()
-  gl[393](shader, source); // 393: ƒ shaderSource()
-  gl[319](shader); // 319: ƒ compileShader()
+  var shader = gl.cS(type); // cS: ƒ createShader()
+  gl.sS(shader, source); // sS: ƒ shaderSource()
+  gl.ce(shader); // ce: ƒ compileShader()
 
   var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS); // DEBUG
   if (success) { // DEBUG
@@ -48,22 +29,6 @@ var createShader = (type, source) => {
   } // DEBUG
   console.log(gl.getShaderInfoLog(shader)) // DEBUG
   gl.deleteShader(shader) // DEBUG
-}
-
-var createProgram = (vertexShader, fragmentShader) => {
-  var program = gl[326](); // 326: ƒ createProgram()
-  var as = 'attachShader';
-  gl[as](program, vertexShader);
-  gl[as](program, fragmentShader);
-  gl[386](program); // 386: ƒ linkProgram()
-
-  var success = gl.getProgramParameter(program, gl.LINK_STATUS); // DEBUG
-  if (success) { // DEBUG
-    return program;
-  } // DEBUG
-
-  console.log(gl.getProgramInfoLog(program)); // DEBUG
-  gl.deleteProgram(program); // DEBUG
 }
 
 /**
@@ -123,8 +88,8 @@ var rotate = (out, a, rad, x, y, z) => {
   ]
 
   var n = 0;
-  for (var i = 0; i < 9; i = i + 3) {
-    for (var j = 0; j < 4; j++) {
+  for (i = 0; i < 9; i = i + 3) {
+    for (j = 0; j < 4; j++) {
       out[n] = a[j] * b[i] + a[4 + j] * b[i + 1] + a[8 + j] * b[i + 2];
       n++;
     }
@@ -148,8 +113,8 @@ var rotate = (out, a, rad, x, y, z) => {
  * @returns {mat4} out
  */
 var multiply = (out, a, b) => {
-  for (var i = 0; i < 16; i = i + 4) {
-    for (var j = 0; j < 4; j++) {
+  for (i = 0; i < 16; i = i + 4) {
+    for (j = 0; j < 4; j++) {
       out[i + j] = b[i] * a[j] + b[i + 1] * a[4 + j] + b[i + 2] * a[8 + j] + b[i + 3] * a[12 + j];
     }
   }
@@ -158,10 +123,54 @@ var multiply = (out, a, b) => {
 
 // gl.VERTEX_SHADER = 35633
 // gl.FRAGMENT_SHADER = 35632
-var fragmentShader = createShader(35632, fragmentShader);
-var vertexShader = createShader(35633, vertexShader);
 
-var program = createProgram(vertexShader, fragmentShader);
+var fragmentShader = createShader(35632, `
+precision mediump float;
+float rng( vec2 a ) { return fract( sin( a.x * 3433.8 + a.y * 3843.98 ) * 45933.8 ); }
+uniform float t;
+varying vec3 fragNormal;
+
+void main() {
+vec3 s = vec3(0.45, 0.24, 0.17);
+
+gl_FragColor = vec4(
+  gl_FragCoord.x * fragNormal.x * rng(vec2(rng(gl_FragCoord.xy), t)) / ${width}.0,
+  gl_FragCoord.y * fragNormal.y / ${height}.0 * mod(gl_FragCoord.y, 2.0),
+  gl_FragCoord.z * fragNormal.z,
+  1.0);
+
+//gl_FragColor = vec4(
+//  gl_FragCoord.x * rng(vec2(rng(v), t)) / ${width}.0,
+//  gl_FragCoord.y / ${height}.0 * mod(gl_FragCoord.y, 2.0),
+//  fragNormal.z,
+//  1);
+// vec4(texel.rgb * light, texel.a);
+//gl_FragColor = vec4(fragNormal, 1.0);
+}`);
+
+var vertexShader = createShader(35633, `precision mediump float;
+attribute vec3 vp;
+attribute vec3 vn;
+varying vec3 fragNormal;
+uniform mat4 w;
+uniform mat4 v;
+uniform mat4 p;
+
+void main(){
+fragNormal = (w * vec4(vn, 0.0)).xyz;
+gl_Position = p * v * w * vec4(vp, 1.0);
+}`);
+
+var program = gl.cP(); // cP: ƒ createProgram()
+gl.aS(program, vertexShader); // aS: ƒ attachShader()
+gl.aS(program, fragmentShader);
+gl.lo(program); // lo: ƒ linkProgram()
+
+var success = gl.getProgramParameter(program, gl.LINK_STATUS); // DEBUG
+if (!success) { // DEBUG
+  console.log(gl.getProgramInfoLog(program)); // DEBUG
+  gl.deleteProgram(program); // DEBUG
+} // DEBUG
 
 /*var buffer = gl.createBuffer();
 // gl.ARRAY_BUFFER = 34962
@@ -193,10 +202,12 @@ gl.bufferData(
 //var indices = [0,1,2,0,2,3,4,5,6,4,6,7,6,20,21,6,21,22,6,22,58,6,58,59,22,21,48,22,48,49,8,9,10,8,10,11,12,13,14,12,14,15,35,13,36,36,13,60,35,36,37,37,36,46,36,60,61,37,46,47,16,17,18,16,18,19,23,24,25,23,25,26,27,28,29,27,29,30,31,32,33,31,33,34,38,39,40,38,40,41,42,43,44,42,44,45,50,51,52,50,52,53,54,55,56,54,56,57];
 // hollow man
 var vertices = [];
-vertices[0] = [0.32,-1,0.4,0,-0.61,0.4,0,-0.61,0,0.32,-1,0,0.91,-1,0,0.53,-0.14,0,0.53,-0.14,0.4,0.91,-1,0.4,0.91,-1,0.4,0.53,-0.14,0.4,0,-0.61,0.4,0.32,-1,0.4,0.32,-1,0,0.91,-1,0,0.91,-1,0.4,0.32,-1,0.4,0.33,0.58,0.4,0.33,0.58,0,0.27,0.94,0,0.27,0.94,0.4,0.33,0.58,0,0.33,0.58,0.4,1,0.3,0.4,1,0.3,0,0,-0.61,0.4,0.33,0.58,0.4,0,0.42,0.4,0.27,0.94,0,0,1,0,0,1,0.4,0.27,0.94,0.4,0.27,0.94,0.4,0,1,0.4,1,0.01,0.4,1,0.01,0,1,0.3,0,1,0.3,0.4,0.53,-0.14,0.4,0.53,-0.14,0,1,0.01,0,1,0.01,0.4,1,0.01,0.4,1,0.3,0.4]
+vertices[0] = [0.32,-1,0.4,0,-0.61,0.4,0,-0.61,0,0.32,-1,0,0.91,-1,0,0.53,-0.14,0,0.53,-0.14,0.4,0.91,-1,0.4,0.91,-1,0.4,0.53,-0.14,0.4,0,-0.61,0.4,0.32,-1,0.4,0.32,-1,0,0.91,-1,0,0.91,-1,0.4,0.32,-1,0.4,0.33,0.58,0.4,0.33,0.58,0,0.27,0.94,0,0.27,0.94,0.4,0.33,0.58,0,0.33,0.58,0.4,1,0.3,0.4,1,0.3,0,0,-0.61,0.4,0.33,0.58,0.4,0,0.42,0.4,0.27,0.94,0,0,1,0,0,1,0.4,0.27,0.94,0.4,0.27,0.94,0.4,0,1,0.4,1,0.01,0.4,1,0.01,0,1,0.3,0,1,0.3,0.4,0.53,-0.14,0.4,0.53,-0.14,0,1,0.01,0,1,0.01,0.4,1,0.01,0.4,1,0.3,0.4];
 indices = [0,1,2,0,2,3,4,5,6,4,6,7,8,9,10,8,10,11,24,9,25,25,9,41,24,25,26,26,25,31,25,41,42,26,31,32,12,13,14,12,14,15,16,17,18,16,18,19,20,21,22,20,22,23,27,28,29,27,29,30,33,34,35,33,35,36,37,38,39,37,39,40];
+normals = [-0.7787,-0.6274,0,-0.7787,-0.6274,0,-0.7787,-0.6274,0,-0.7787,-0.6274,0,0.9147,0.4041,0,0.9147,0.4041,0,0.9147,0.4041,0,0.9147,0.4041,0,0,0,1,0,0,1,0,0,1,0,0,1,0.0134,-0.9999,0,0.0134,-0.9999,0,0.0134,-0.9999,0,0.0134,-0.9999,0,0.9846,0.175,0,0.9846,0.175,0,0.9846,0.175,0,0.9846,0.175,0,0.3939,0.9191,0,0.3939,0.9191,0,0.3939,0.9191,0,0.3939,0.9191,0,0,0,1,0,0,1,0,0,1,0.2239,0.9746,0,0.2239,0.9746,0,0.2239,0.9746,0,0.2239,0.9746,0,0,0,1,0,0,1,1,0,0,1,0,0,1,0,0,1,0,0,0.3065,-0.9519,0,0.3065,-0.9519,0,0.3065,-0.9519,0,0.3065,-0.9519,0,0,0,1,0,0,1];
 vertices[1] = vertices[0].map((x, i) => i%3 ? x: -x) // mirror x & y
-
+//vertices[2] = vertices[0].map((x, i) => i%3!=1 ? x+1: x)
+//vertices[3] = vertices[1].map((x, i) => i%3!=1 ? x+1: x)
 
 var worldMatrix = new floatArray(16);
 var viewMatrix = [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, -4, 1];
@@ -210,7 +221,7 @@ var matProjUniformLocation = gl[ul](program, 'p');
 var xRotationMatrix = new floatArray(16);
 var yRotationMatrix = new floatArray(16);
 
-var angle = 0;
+var progress = 0;
 var startTime;
 
 r = () => {
@@ -220,35 +231,53 @@ r = () => {
 
   var glFalse; // =undefined
 
-  gl[315](0.6, 0.8, 1, 1) // 315: ƒ clearColor()
-  // gl.COLOR_BUFFER_BIT | gl.COLOR_BUFFER_BIT == 4**7
-  gl[314](4 ** 7) // 314: ƒ clear()
+  // Use program
+  gl.ug(program); // ug: ƒ useProgram()
 
-  angle = (performance.now() - startTime) / 1e3;
+  //gl.co(0.6, 0.8, 1, 1) // co: ƒ clearColor()
+  gl.co(0.45 * m.sin(progress), 0.24 * m.sin(progress), 0.17 * m.sin(progress), .8);
+
+  // gl.COLOR_BUFFER_BIT | gl.COLOR_BUFFER_BIT == 4**7
+  gl.clear(4 ** 7) // note: not shortened
+
+  progress = (performance.now() - startTime) / 1e3;
+
   var identityMatrix = 33825..toString(2).split``; // =  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
-  rotate(yRotationMatrix, identityMatrix, angle / 2, 0, 1, 0);
-  rotate(xRotationMatrix, identityMatrix, angle / 20, 1, 0, 0);
+  rotate(yRotationMatrix, identityMatrix, progress / 0.5, 0, 1, 0);
+  rotate(xRotationMatrix, identityMatrix, m.sin(progress)/1.5, 1, 0, 0);
   multiply(worldMatrix, yRotationMatrix, xRotationMatrix);
-  gl[422](matWorldUniformLocation, glFalse, worldMatrix); // 422: ƒ uniformMatrix4fv()
+  gl.um(matWorldUniformLocation, glFalse, worldMatrix); // um: ƒ uniformMatrix4fv()
+
+  gl.depthFunc(gl.LEQUAL); // Near things obscure far things
 
   var vertexBuffer = [];
   var indexBuffer = [];
-  for (var i=0;i<vertices.length;i++) {
-    var positionAttributeLocation = gl[356](program, 'vp'); // 356: ƒ getAttribLocation()
+  var normalBuffer = [];
+  for (i=0;i<vertices.length;i++) {
 
-    vertexBuffer[i] = gl[324](); // 324: ƒ createBuffer()
-    indexBuffer[i] = gl[324]();
+    var positionAttributeLocation = gl.gr(program, 'vp'); // gr: ƒ getAttribLocation()
+    var normalAttributeLocation = gl.gr(program, 'vn');
 
+    vertexBuffer[i] = gl.cB(); // cB: ƒ createBuffer()
+    indexBuffer[i] = gl.cB();
+    normalBuffer[i] = gl.cB();
+
+    // Bind vertex buffer
     // gl.StaticDrawConstant = 35044, gl.ArrayBufferConstant = 34962;
-    gl[302](34962, vertexBuffer[i]); // 302: ƒ bindBuffer()
-    gl[311](34962, new floatArray(vertices[i]), 35044); // 311: ƒ bufferData()
+    gl.bf(34962, vertexBuffer[i]); // bf: ƒ bindBuffer()
+    gl.bD(34962, new floatArray(vertices[i]), 35044); // bD: ƒ bufferData()
 
+    // Bind index buffer
     // gl.ElementArrayBuffer = 34963;
-    gl[302](34963, indexBuffer[i]); // 302: ƒ bindBuffer()
-    gl[311](34963, new Uint16Array(indices), 35044); // 311: ƒ bufferData()
+    gl.bf(34963, indexBuffer[i]); // bf: ƒ bindBuffer()
+    gl.bD(34963, new Uint16Array(indices), 35044); // bD: ƒ bufferData()
 
-    gl[302](34962, vertexBuffer[i]); // 302: ƒ bindBuffer()
-    gl[433]( // 433: ƒ vertexAttribPointer()
+    // Bind normal buffer
+    gl.bf(34962, normalBuffer[i]);
+    gl.bD(34962, new floatArray(normals), 35044);
+
+    gl.bf(34962, vertexBuffer[i]); // bf: ƒ bindBuffer()
+    gl.vA( // vA: ƒ vertexAttribPointer()
       positionAttributeLocation, // Attribute location
       3, // Number of elements per attribute
       5126, // Type of elements (5126 = gl.FLOAT)
@@ -256,24 +285,33 @@ r = () => {
       12, // Size of an individual vertex (3 * Float32Array.BYTES_PER_ELEMENT)
       0
     );
-    gl[346](positionAttributeLocation); // 346: ƒ enableVertexAttribArray()
+    gl.eV(positionAttributeLocation); // eV: ƒ enableVertexAttribArray()
 
-    gl[434](0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight); // 434: ƒ viewport()
+    gl.bf(34962, normalBuffer[i]);
+    gl.vA(
+      normalAttributeLocation,
+      3,
+      5126,
+      gl.TRUE,
+      12, // Size of an individual vertex (3 * Float32Array.BYTES_PER_ELEMENT)
+      0
+    );
+    gl.eV(normalAttributeLocation); // eV: ƒ enableVertexAttribArray()
 
-    // User program
-    gl[423](program); // 423: ƒ useProgram()
+    gl.vr(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight); // vr: ƒ viewport()
 
     perspective(projMatrix, 0.8, 1e-6, 1e3); // 1e-6 is our epsilon value
 
-    gl[422](matWorldUniformLocation, glFalse, worldMatrix); // 422: ƒ uniformMatrix4fv()
-    gl[422](matViewUniformLocation, glFalse, viewMatrix); // 422: ƒ uniformMatrix4fv()
-    gl[422](matProjUniformLocation, glFalse, projMatrix); // 422: ƒ uniformMatrix4fv()
-    // 344: ƒ drawElements()
-    gl[344](4, indices.length, 5123, 0); // gl.TRIANGLES = 4, gl.UNSIGNED_SHORT = 5123
-  }
+    gl.um(matWorldUniformLocation, glFalse, worldMatrix); // um: ƒ uniformMatrix4fv()
+    gl.um(matViewUniformLocation, glFalse, viewMatrix); // um: ƒ uniformMatrix4fv()
+    gl.um(matProjUniformLocation, glFalse, projMatrix); // um: ƒ uniformMatrix4fv()
 
-  var uniformTimeHandle = gl[ul](program, 't');
-  gl[404](uniformTimeHandle, new Date().getMilliseconds()); // 404: ƒ uniform1f()
+    var uniformTimeHandle = gl[ul](program, 't');
+    gl.uniform1f(uniformTimeHandle, progress); // note: not shortened
+
+    // de: ƒ drawElements()
+    gl.de(4, indices.length, 5123, 0); // gl.TRIANGLES = 4, gl.UNSIGNED_SHORT = 5123
+  }
 
   win.requestAnimationFrame(r);
 }
