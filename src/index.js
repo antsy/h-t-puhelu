@@ -2,7 +2,7 @@
 
 var win = this; // window == this in global context
 var canvas = document.getElementById('x');
-var gl = canvas.getContext('webgl');
+var gl = canvas.getContext('webgl2');
 var i = j = 0;
 for (Z in gl) gl[Z[0]+Z[6]] = gl[Z]; // Neat trick to shorten (some of the) names of webgl functions
 // console.log(gl); // and its results
@@ -124,34 +124,42 @@ var multiply = (out, a, b) => {
 // gl.VERTEX_SHADER = 35633
 // gl.FRAGMENT_SHADER = 35632
 
-var fragmentShader = createShader(35632, `
+var fragmentShader = createShader(35632, `#version 300 es
 precision mediump float;
 float rng( vec2 a ) { return fract( sin( a.x * 3433.8 + a.y * 3843.98 ) * 45933.8 ); }
 uniform float t;
-varying vec3 fragNormal;
+in vec3 fragNormal;
+out vec4 o;
 
 void main() {
+
 vec3 s = vec3(0.45, 0.24, 0.17);
 
-gl_FragColor = vec4(
-  gl_FragCoord.x * fragNormal.x * rng(vec2(rng(gl_FragCoord.xy), t)) / ${width}.0,
-  gl_FragCoord.y * fragNormal.y / ${height}.0 * mod(gl_FragCoord.y, 2.0),
-  gl_FragCoord.z * fragNormal.z,
+vec3 lightDir = vec3(0.5, 0.5, 1);
+
+float light = dot(fragNormal, lightDir) * 0.8 + 1.2;
+o = vec4(
+  vec3(
+  gl_FragCoord.x * s.x * rng(vec2(rng(gl_FragCoord.xy), t)) / ${width}.0,
+  gl_FragCoord.y * s.y / ${height}.0 * mod(gl_FragCoord.y+sin(gl_FragCoord.x/t)*4.0, 5.0),
+  gl_FragCoord.z * s.z
+  ).rgb * light,
   1.0);
 
-//gl_FragColor = vec4(
+//o = vec4(
 //  gl_FragCoord.x * rng(vec2(rng(v), t)) / ${width}.0,
 //  gl_FragCoord.y / ${height}.0 * mod(gl_FragCoord.y, 2.0),
 //  fragNormal.z,
 //  1);
 // vec4(texel.rgb * light, texel.a);
-//gl_FragColor = vec4(fragNormal, 1.0);
+//o = vec4(fragNormal, 1.0);
 }`);
 
-var vertexShader = createShader(35633, `precision mediump float;
-attribute vec3 vp;
-attribute vec3 vn;
-varying vec3 fragNormal;
+var vertexShader = createShader(35633, `#version 300 es
+precision mediump float;
+in vec3 vp;
+in vec3 vn;
+out vec3 fragNormal;
 uniform mat4 w;
 uniform mat4 v;
 uniform mat4 p;
@@ -171,22 +179,6 @@ if (!success) { // DEBUG
   console.log(gl.getProgramInfoLog(program)); // DEBUG
   gl.deleteProgram(program); // DEBUG
 } // DEBUG
-
-/*var buffer = gl.createBuffer();
-// gl.ARRAY_BUFFER = 34962
-// gl.STATIC_DRAW = 35044
-gl.bindBuffer(34962, buffer);
-gl.bufferData(
-  34962,
-  new Float32Array([
-    -1.0, -1.0,
-    1.0, -1.0,
-    -1.0, 1.0,
-    -1.0, 1.0,
-    1.0, -1.0,
-    1.0, 1.0]),
-  35044
-);*/
 
 // var testi = " abcdefghijklmnop üýþÿ" // DEBUG
 // for (var c in testi) { // DEBUG
@@ -262,10 +254,36 @@ r = () => {
     indexBuffer[i] = gl.cB();
     normalBuffer[i] = gl.cB();
 
+    /*var buffer = gl.cB();
+    // gl.ARRAY_BUFFER = 34962
+    // gl.STATIC_DRAW = 35044
+    gl.bf(34962, buffer);
+    gl.bD(
+      34962,
+      new Float32Array([
+        -1.0, -1.0,
+        1.0, -1.0,
+        -1.0, 1.0,
+        -1.0, 1.0,
+        1.0, -1.0,
+        1.0, 1.0]),
+      35044
+    );*/
+
     // Bind vertex buffer
     // gl.StaticDrawConstant = 35044, gl.ArrayBufferConstant = 34962;
     gl.bf(34962, vertexBuffer[i]); // bf: ƒ bindBuffer()
     gl.bD(34962, new floatArray(vertices[i]), 35044); // bD: ƒ bufferData()
+    gl.vA( // vA: ƒ vertexAttribPointer()
+      positionAttributeLocation, // Attribute location
+      3, // Number of elements per attribute
+      5126, // Type of elements (5126 = gl.FLOAT)
+      glFalse,
+      12, // Size of an individual vertex (3 * Float32Array.BYTES_PER_ELEMENT)
+      0
+    );
+    gl.eV(positionAttributeLocation); // eV: ƒ enableVertexAttribArray()
+
 
     // Bind index buffer
     // gl.ElementArrayBuffer = 34963;
@@ -276,16 +294,6 @@ r = () => {
     gl.bf(34962, normalBuffer[i]);
     gl.bD(34962, new floatArray(normals), 35044);
 
-    gl.bf(34962, vertexBuffer[i]); // bf: ƒ bindBuffer()
-    gl.vA( // vA: ƒ vertexAttribPointer()
-      positionAttributeLocation, // Attribute location
-      3, // Number of elements per attribute
-      5126, // Type of elements (5126 = gl.FLOAT)
-      glFalse,
-      12, // Size of an individual vertex (3 * Float32Array.BYTES_PER_ELEMENT)
-      0
-    );
-    gl.eV(positionAttributeLocation); // eV: ƒ enableVertexAttribArray()
 
     gl.bf(34962, normalBuffer[i]);
     gl.vA(
