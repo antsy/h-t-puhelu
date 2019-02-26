@@ -10,6 +10,7 @@ const jscrush = require('./lib/jscrush');
 const crunchme = require('./lib/crunchme');
 const jssfx = require('./lib/jssfx')
 const packify = require('./lib/ba-packify');
+const regpack = require('./lib/regpack');
 
 /**
  * Build without any compression (just merge files)
@@ -103,10 +104,11 @@ gulp.task('build_production', () => {
     }))
     .pipe(stripDebug()) // There actually is an npm package just for removing console.log's from your source
     .pipe(terser(options)) // Minify with Terser
-    .pipe(jscrush()) // Compress with JSCrush (best compression but sometimes produces output which won't unpack properly)
+    //.pipe(jscrush()) // Compress with JSCrush (excellent compression but sometimes produces output which won't unpack properly)
     //.pipe(packify()) // Compress with ba-packify
     //.pipe(crunchme()) // Compress with crunchme
-    //.pipe(jssfx()) // Compress with jssfx (be patient, this is slow!)
+    //.pipe(jssfx()) // Compress with jssfx (be patient, this one is slow!)
+    .pipe(regpack()) // Some new thing, seems awesome compared to every other compressor I tried
     .pipe(headerfooter.header(header))
     .pipe(headerfooter.footer(footer))
     .pipe(rename('index.html'))
