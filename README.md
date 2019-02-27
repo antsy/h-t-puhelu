@@ -25,6 +25,7 @@ open `build\index.html` with Chrome to view
 * https://codegolf.stackexchange.com/questions/37624/tips-for-golfing-in-ecmascript-6-and-above
 * https://thebookofshaders.com/11/
 * https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Creating_3D_objects_using_WebGL
+* https://webgl2fundamentals.org/
 
 * https://medium.com/@omar4ur/flat-shading-in-webgl-with-playcanvas-a-quick-tip-97d1bd85258f
 * https://www.shadertoy.com/view/ldf3RN (bokeh blur)
@@ -32,6 +33,7 @@ open `build\index.html` with Chrome to view
 * http://synth.bitsnbites.eu/
 * https://delphic.me.uk/tutorials/webgl-text
 * https://github.com/mdn/webgl-examples/blob/gh-pages/tutorial/sample5/webgl-demo.js
+* https://gist.github.com/thomaswilburn/6128987
 
 ### Minification/Packing:
 

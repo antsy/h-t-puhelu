@@ -3,6 +3,7 @@
 var win = this; // window == this in global context
 var canvas = document.getElementById('x');
 var gl = canvas.getContext('webgl2');
+var textArea = document.getElementById('y');
 var i = j = 0;
 for (Z in gl) gl[Z[0]+Z[6]] = gl[Z]; // Neat trick to shorten (some of the) names of webgl functions
 // console.log(gl); // and its results
@@ -215,7 +216,10 @@ var yRotationMatrix = new floatArray(16);
 
 var progress = 0;
 var startTime;
+var soundInterval;
+var oscillator;
 
+var identityMatrix = 33825..toString(2).split``; // =  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 r = () => {
   if (!startTime) {
     startTime = performance.now();
@@ -228,19 +232,40 @@ r = () => {
 
   //gl.co(0.6, 0.8, 1, 1) // co: ƒ clearColor()
   gl.co(0.45 * m.sin(progress), 0.24 * m.sin(progress), 0.17 * m.sin(progress), .8);
+  console.log(0.45 * m.sin(progress))
 
   // gl.COLOR_BUFFER_BIT | gl.COLOR_BUFFER_BIT == 4**7
-  gl.clear(4 ** 7) // note: not shortened
+  gl.clear(4**7) // note: not shortened
 
   progress = (performance.now() - startTime) / 1e3;
 
-  var identityMatrix = 33825..toString(2).split``; // =  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
   rotate(yRotationMatrix, identityMatrix, progress / 0.5, 0, 1, 0);
   rotate(xRotationMatrix, identityMatrix, m.sin(progress)/1.5, 1, 0, 0);
   multiply(worldMatrix, yRotationMatrix, xRotationMatrix);
   gl.um(matWorldUniformLocation, glFalse, worldMatrix); // um: ƒ uniformMatrix4fv()
 
   gl.depthFunc(gl.LEQUAL); // Near things obscure far things
+
+  // Räjäytys
+  if (progress > 20) {
+    var i = ~~(m.random()*vertices[1].length);
+    vertices[0][i] = vertices[0][i] + (m.sin(progress)*0.1);
+    vertices[1][i] = vertices[1][i] + (m.sin(progress)*0.1);
+  }
+  if (progress > 40) {
+    clearInterval(soundInterval);
+    gl.co(0,0,0,1);
+    gl.clear(4**7);
+    setTimeout(() => {
+      oscillator.stop();
+    }, 4000)
+    return;
+  }
+  textArea.innerHTML = 'HALLITSEMATON MAAHANMUUTTO ON PYSÄYTETTÄVÄ';
+
+  if (progress - ~~progress < 0.01) { // DEBUG
+    console.log(~~progress) // DEBUG
+  } // DEBUG
 
   var vertexBuffer = [];
   var indexBuffer = [];
@@ -294,7 +319,6 @@ r = () => {
     gl.bf(34962, normalBuffer[i]);
     gl.bD(34962, new floatArray(normals), 35044);
 
-
     gl.bf(34962, normalBuffer[i]);
     gl.vA(
       normalAttributeLocation,
@@ -326,18 +350,17 @@ r = () => {
 
 s = () => {
   var audioContext = new AudioContext();
-  var o = audioContext.createOscillator();
+  oscillator = audioContext.createOscillator();
   // sounds
-  o.type = "sawtooth";
-  o.connect(audioContext.destination);
-  o.frequency.value = 666;
-  o.start();
+  oscillator.type = "sawtooth";
+  oscillator.connect(audioContext.destination);
+  oscillator.start();
   s = () => {}; // ':D
-  setInterval(() => {
+  soundInterval = setInterval(() => {
     var time = performance.now() - startTime;
-    o.detune.value = m.sin(time) * 100;
-    o.frequency.value = m.cos(time) * 50 + 500;
-  }, 100)
+    oscillator.detune.value = oscillator.detune.value + m.sin(time) * 25;
+    oscillator.frequency.value = m.cos(time) * 50 + (progress * 25);
+  }, 160)
 }
 
 r() // DEBUG
