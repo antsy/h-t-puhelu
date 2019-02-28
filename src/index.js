@@ -201,6 +201,8 @@ normals = [-0.7787,-0.6274,0,-0.7787,-0.6274,0,-0.7787,-0.6274,0,-0.7787,-0.6274
 vertices[1] = vertices[0].map((x, i) => i%3 ? x: -x) // mirror x & y
 //vertices[2] = vertices[0].map((x, i) => i%3!=1 ? x+1: x)
 //vertices[3] = vertices[1].map((x, i) => i%3!=1 ? x+1: x)
+//vertices[4] = vertices[0].map((x, i) => i%3!=1 ? x+2: x)
+//vertices[5] = vertices[1].map((x, i) => i%3!=1 ? x+2: x)
 
 var worldMatrix = new floatArray(16);
 var viewMatrix = [-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, -4, 1];
@@ -218,6 +220,7 @@ var progress = 0;
 var startTime;
 var soundInterval;
 var oscillator;
+//var webscoket = new WebSocket("ws://valot.party:9910");
 
 var identityMatrix = 33825..toString(2).split``; // =  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 r = () => {
@@ -231,7 +234,13 @@ r = () => {
   gl.ug(program); // ug: ƒ useProgram()
 
   //gl.co(0.6, 0.8, 1, 1) // co: ƒ clearColor()
-  gl.co(0.45 * m.sin(progress), 0.24 * m.sin(progress), 0.17 * m.sin(progress), .8);
+  var red = 0.45 * m.sin(progress);
+  var green = 0.24 * m.sin(progress);
+  var blue = 0.17 * m.sin(progress);
+  //var bytearray = new Uint8Array([1, 1, 14, 0, 255*red, 255*green, 255*blue]);
+  //webscoket.send(bytearray);
+
+  gl.co(red, green, blue, .8);
   console.log(0.45 * m.sin(progress))
 
   // gl.COLOR_BUFFER_BIT | gl.COLOR_BUFFER_BIT == 4**7
@@ -261,7 +270,10 @@ r = () => {
     }, 4000)
     return;
   }
-  textArea.innerHTML = 'HALLITSEMATON MAAHANMUUTTO ON PYSÄYTETTÄVÄ';
+  const textArray = [
+    '',
+  ];
+  textArea.innerHTML = textArray[0];
 
   if (progress - ~~progress < 0.01) { // DEBUG
     console.log(~~progress) // DEBUG
