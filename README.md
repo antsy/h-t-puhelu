@@ -10,7 +10,7 @@ Requires [effect server](https://github.com/Instanssi/effectserver) and 24 color
 
 ## Background
 
-This is actually my first demoparty combo release ever and I learned a lot of new stuff while making it.
+This is actually my first demoparty compo release ever and I learned a lot of new stuff while making it.
 
 For the idea I wish to thank [Alibi magazine](https://alibi.fi/tilaajapalvelut/).
 
