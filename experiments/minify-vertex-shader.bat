@@ -1,0 +1,1 @@
+@node ..\node_modules\glsl-minifier\bin\glsl-minifier.js -sT=vertex -sV=3 -i .\vertex.glsl -o .\vertex.min.glsl

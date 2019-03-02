@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <title>Instanssi valo-testi</title>
+  </head>
+  <body>
+    <button onclick="valo()">paina tästä</button>
+  </body>
+  <script>
+    const webscoket = new WebSocket("ws://valot.party:9910");
+    let colorArray = [1];
+    const red = 0.1;
+    const green = 0.8;
+    const blue = 0.2;
+
+    for(var i = 0;i<24;i++) {
+      colorArray.push(1, i, 0, ~~(255*red), ~~(255*green), ~~(255*blue));
+    }
+    var bytearray = new Uint8Array(colorArray);
+
+    const valo = () => {
+      try {
+        webscoket.send(bytearray);
+      }
+      catch (e) {
+        console.error(e);
+      }
+    }
+  </script>
+</html>

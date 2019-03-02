@@ -1,0 +1,88 @@
+<html>
+  <head>
+    <title>Webgl function name shortening trick thingy</title>
+  </head>
+  <body>
+    <p>Look at your browser console for results</p>
+    <canvas id="x"></canvas>
+<script>
+  // function names we want shorter
+  const wanted = [
+    'createShader',
+    'shaderSource',
+    'compileShader',
+    'createProgram',
+    'attachShader',
+    'linkProgram',
+    'clearColor',
+    'clear',
+    'uniformMatrix4fv',
+    'getAttribLocation',
+    'createBuffer',
+    'bindBuffer',
+    'bufferData',
+    'vertexAttribPointer',
+    'enableVertexAttribArray',
+    'viewport',
+    'useProgram',
+    'drawElements',
+    'uniform1f',
+  ];
+
+  // experiment with these values
+  const index1 = 0;
+  const index2 = 6;
+
+  const mapped = wanted.map(y => {
+    if (!y[index1] || !y[index2]) {
+      console.error(`'${y}' overflows the index`);
+      return {'long': y, 'short': undefined}
+    }
+    return {'long': y, 'short': y[index1] + y[index2]}
+  });
+
+  const uniques = mapped.reduce((acc, val) => {
+    acc[val.short] = acc[val.short] === undefined ? 1 : acc[val.short] += 1;
+    return acc;
+  }, {});
+
+  const result = Object.keys(uniques).map(k => {
+    return {
+      'short_name': k,
+      'count': uniques[k],
+      'long_names': mapped.reduce((acc, val) => {
+        if(val.short === k) {
+          acc.push(val.long)
+        }
+        return acc;
+      }, []).join(', ')
+    }
+  })
+
+  console.log(`indexes used: ${index1}, ${index2}`);
+
+  console.table(result);
+
+  let errorCount = 0;
+  for (var key in result) {
+    if (result[key].short_name != 'undefined' && result[key].count > 1) {
+      errorCount++;
+    }
+  }
+  if (errorCount > 0) {
+    console.error(`${errorCount} collisions found from the result :(`);
+  } else {
+    console.log('Perfect result!');
+  }
+
+  var canvas = document.getElementById('x');
+  var gl = canvas.getContext('webgl');
+  var i = 0;
+  for (Z in gl) gl[Z[index1]+Z[index2]] = gl[Z]; // Neat trick to shorten names of webgl functions
+
+  for(var i in mapped) {
+    console.log(mapped[i].short, gl[mapped[i].short]);
+  }
+
+</script>
+</body>

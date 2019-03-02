@@ -1,0 +1,1 @@
+attribute vec2 p;void main(){vec4 a;a.zw=vec2(0.0,1.0);a.xy=p;gl_Position=a;}
