@@ -196,7 +196,7 @@ var soundInterval;
 var oscillator;
 
 // Party arena light server
-var webscoket = new WebSocket("ws://valot.party:9910");
+var webscoket = new WebSocket("ws://valot.party:9910"); // PRODUCTION
 var colorChanger = (red, green, blue) => {
   var colorArray = [1];
   for(var i = 0;i<24;i++) {
@@ -204,10 +204,11 @@ var colorChanger = (red, green, blue) => {
   }
   var bytearray = new Uint8Array(colorArray);
   try {
-    webscoket.send(bytearray);
-    // console.log(bytearray);
+    webscoket.send(bytearray); // PRODUCTION
+    console.log(bytearray); // DEBUG
     //console.log(m.round(red*255, 2), m.round(green*255, 2), m.round(blue*255, 2));
   } catch(e) {
+    // When you're at the bat country, never stop.
   }
 }
 

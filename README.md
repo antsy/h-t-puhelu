@@ -1,15 +1,24 @@
-# COOL DEMO
+# Hätäpuhelu
 
-ecmascript6/webgl 4k intro for Instanssi 2019 party
+EcmaScript6/webgl2 4k intro for Instanssi 2019 party.
 
-run `yarn build` to build
+Run `yarn build` to build.
 
-open `build\index.html` with Chrome to view
+Open `build\index.html` with Chrome to view. Only tested with latest Vivaldi/Chrome, probably doesn't work with any other browsers.
 
+Requires [effect server](https://github.com/Instanssi/effectserver) and 24 colorful controllable lights to be fully "enjoyed".
 
-## Stuff I studied while making this demo
+## Background
 
-### Some neat resources:
+This is actually my first demoparty combo release ever and I learned a lot of new stuff while making it.
+
+For the idea I wish to thank [Alibi magazine](https://alibi.fi/tilaajapalvelut/).
+
+Like any project with a strict deadline it started with planning and ambitions and ended with rush and spaghetti.
+
+### List of useful stuff I studied while making this demo
+
+#### Some neat resources:
 
 * https://github.com/acgessler/assimp2json
 * https://skalman.github.io/UglifyJS-online/
@@ -36,7 +45,7 @@ open `build\index.html` with Chrome to view
 * https://github.com/mdn/webgl-examples/blob/gh-pages/tutorial/sample5/webgl-demo.js
 * https://gist.github.com/thomaswilburn/6128987
 
-### Minification/Packing:
+#### Minification/Packing:
 
 * http://www.iteral.com/jscrush/
 * https://github.com/cowboy/javascript-packify
@@ -45,6 +54,3 @@ open `build\index.html` with Chrome to view
 * https://code.google.com/archive/p/jssfx/
 * https://github.com/Siorki/RegPack
 
-## Sidenotes
-
-This is my first demo
