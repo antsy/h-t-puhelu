@@ -133,34 +133,9 @@ var multiply = (out, a, b) => {
 // f = from vertex shader
 // u = 0: background, 1: dude
 var fragmentShader = createShader(35632, `#version 300 es
-precision mediump float;
-float rng( vec2 a ) { return fract( sin( a.x * 3433.8 + a.y * 3843.98 ) * 45933.8 ); }
-uniform float t;
-uniform vec3 c;
-in vec3 f;
-out vec4 o;
-uniform float u;
-
-void main() {
-
-vec3 l = vec3(0.5, 0.5, 1);
-
-float light = dot(f, l) * 0.8 + 1.2;
-if (u == 0.0) {
-o = vec4(
-  gl_FragCoord.y * c.y / ${height}.0 * mod(gl_FragCoord.y - sin(gl_FragCoord.x/t)*4.0, 5.0),
-  gl_FragCoord.x * c.x * rng(vec2(rng(gl_FragCoord.xy), t)) / ${width}.0,
-  gl_FragCoord.z * c.z,
-  1.0);
-} else {
-o = vec4(
-  vec3(
-  (gl_FragCoord.x * rng(vec2(u, t)) / ${width}.0),
-  gl_FragCoord.y / ${height}.0 * mod(gl_FragCoord.y, 2.0),
-  f.z * c.z
-  ).rgb * light,
-  1.0);
-}}`);
+precision mediump float;float rng(vec2 a){return fract(sin(a.x*3433.8+a.y*3843.98)*45933.8);}uniform float t;uniform vec3 c;in vec3 f;out vec4 o;uniform float u;
+void main(){vec3 l=vec3(0.5,0.5,1);float light=dot(f,l)* 0.8+1.2;
+if (u==0.0) {o=vec4(gl_FragCoord.y*c.y/${height}.0*mod(gl_FragCoord.y-sin(gl_FragCoord.x/t)*4.0,5.0),gl_FragCoord.x*c.x*rng(vec2(rng(gl_FragCoord.xy),t))/${width}.0,gl_FragCoord.z*c.z,1.0);}else{o=vec4(vec3((gl_FragCoord.x*rng(vec2(u,t))/${width}.0),gl_FragCoord.y/${height}.0*mod(gl_FragCoord.y,2.0),f.z*c.z).rgb*light,1.0);}}`);
 
 var vertexShader = createShader(35633, `#version 300 es
 precision mediump float;in vec3 vp;in vec3 vn;out vec3 f;uniform mat4 w;uniform mat4 v;uniform mat4 p;void main(){f = (w * vec4(vn, 0.0)).xyz;gl_Position = p * v * w * vec4(vp, 1.0);}`);
@@ -229,7 +204,7 @@ var colorChanger = (red, green, blue) => {
   }
   var bytearray = new Uint8Array(colorArray);
   try {
-    //webscoket.send(bytearray);
+    webscoket.send(bytearray);
     // console.log(bytearray);
     //console.log(m.round(red*255, 2), m.round(green*255, 2), m.round(blue*255, 2));
   } catch(e) {
