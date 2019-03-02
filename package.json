@@ -4,7 +4,8 @@
     "build": "gulp build",
     "prod": "gulp prod",
     "raw": "gulp build_raw",
-    "watch": "gulp watch"
+    "watch": "gulp watch",
+    "final_watch": "gulp prod_watch"
   },
   "devDependencies": {
     "glsl-minifier": "^0.0.13",

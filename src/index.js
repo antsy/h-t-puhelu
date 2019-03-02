@@ -1,5 +1,3 @@
-
-
 var win = this; // window == this in global context
 var canvas = document.getElementById('x');
 var gl = canvas.getContext('webgl2');
@@ -12,6 +10,11 @@ var height = canvas.height = win.innerHeight;
 var floatArray = Float32Array;
 
 var m = Math;
+var seed = 1;
+var rng = () => {
+  var x = m.sin(seed++) * 10000;
+  return x - ~~x;
+}
 
 /**
  * Helper function to compile shader
@@ -125,50 +128,42 @@ var multiply = (out, a, b) => {
 // gl.VERTEX_SHADER = 35633
 // gl.FRAGMENT_SHADER = 35632
 
+// t = progress timer
+// c = ambient color
+// f = from vertex shader
+// u = 0: background, 1: dude
 var fragmentShader = createShader(35632, `#version 300 es
 precision mediump float;
 float rng( vec2 a ) { return fract( sin( a.x * 3433.8 + a.y * 3843.98 ) * 45933.8 ); }
 uniform float t;
-in vec3 fragNormal;
+uniform vec3 c;
+in vec3 f;
 out vec4 o;
+uniform float u;
 
 void main() {
 
-vec3 s = vec3(0.45, 0.24, 0.17);
+vec3 l = vec3(0.5, 0.5, 1);
 
-vec3 lightDir = vec3(0.5, 0.5, 1);
-
-float light = dot(fragNormal, lightDir) * 0.8 + 1.2;
+float light = dot(f, l) * 0.8 + 1.2;
+if (u == 0.0) {
+o = vec4(
+  gl_FragCoord.y * c.y / ${height}.0 * mod(gl_FragCoord.y - sin(gl_FragCoord.x/t)*4.0, 5.0),
+  gl_FragCoord.x * c.x * rng(vec2(rng(gl_FragCoord.xy), t)) / ${width}.0,
+  gl_FragCoord.z * c.z,
+  1.0);
+} else {
 o = vec4(
   vec3(
-  gl_FragCoord.x * s.x * rng(vec2(rng(gl_FragCoord.xy), t)) / ${width}.0,
-  gl_FragCoord.y * s.y / ${height}.0 * mod(gl_FragCoord.y+sin(gl_FragCoord.x/t)*4.0, 5.0),
-  gl_FragCoord.z * s.z
+  (gl_FragCoord.x * rng(vec2(u, t)) / ${width}.0),
+  gl_FragCoord.y / ${height}.0 * mod(gl_FragCoord.y, 2.0),
+  f.z * c.z
   ).rgb * light,
   1.0);
-
-//o = vec4(
-//  gl_FragCoord.x * rng(vec2(rng(v), t)) / ${width}.0,
-//  gl_FragCoord.y / ${height}.0 * mod(gl_FragCoord.y, 2.0),
-//  fragNormal.z,
-//  1);
-// vec4(texel.rgb * light, texel.a);
-//o = vec4(fragNormal, 1.0);
-}`);
+}}`);
 
 var vertexShader = createShader(35633, `#version 300 es
-precision mediump float;
-in vec3 vp;
-in vec3 vn;
-out vec3 fragNormal;
-uniform mat4 w;
-uniform mat4 v;
-uniform mat4 p;
-
-void main(){
-fragNormal = (w * vec4(vn, 0.0)).xyz;
-gl_Position = p * v * w * vec4(vp, 1.0);
-}`);
+precision mediump float;in vec3 vp;in vec3 vn;out vec3 f;uniform mat4 w;uniform mat4 v;uniform mat4 p;void main(){f = (w * vec4(vn, 0.0)).xyz;gl_Position = p * v * w * vec4(vp, 1.0);}`);
 
 var program = gl.cP(); // cP: ƒ createProgram()
 gl.aS(program, vertexShader); // aS: ƒ attachShader()
@@ -213,14 +208,33 @@ var matWorldUniformLocation = gl[ul](program, 'w');
 var matViewUniformLocation = gl[ul](program, 'v');
 var matProjUniformLocation = gl[ul](program, 'p');
 
+var objectPickerUniform = gl[ul](program, 'u');
+var ambientColorUniform = gl[ul](program, 'c');
+
 var xRotationMatrix = new floatArray(16);
 var yRotationMatrix = new floatArray(16);
 
 var progress = 0;
+var roundedProgress = 0;
 var startTime;
 var soundInterval;
 var oscillator;
-//var webscoket = new WebSocket("ws://valot.party:9910");
+
+// Party arena light server
+var webscoket = new WebSocket("ws://valot.party:9910");
+var colorChanger = (red, green, blue) => {
+  var colorArray = [1];
+  for(var i = 0;i<24;i++) {
+    colorArray.push(1, i, 0, ~~(255*red), ~~(255*green), ~~(255*blue));
+  }
+  var bytearray = new Uint8Array(colorArray);
+  try {
+    //webscoket.send(bytearray);
+    // console.log(bytearray);
+    //console.log(m.round(red*255, 2), m.round(green*255, 2), m.round(blue*255, 2));
+  } catch(e) {
+  }
+}
 
 var identityMatrix = 33825..toString(2).split``; // =  [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
 r = () => {
@@ -233,47 +247,94 @@ r = () => {
   // Use program
   gl.ug(program); // ug: ƒ useProgram()
 
-  //gl.co(0.6, 0.8, 1, 1) // co: ƒ clearColor()
-  var red = 0.45 * m.sin(progress);
-  var green = 0.24 * m.sin(progress);
-  var blue = 0.17 * m.sin(progress);
-  //var bytearray = new Uint8Array([1, 1, 14, 0, 255*red, 255*green, 255*blue]);
-  //webscoket.send(bytearray);
-
-  gl.co(red, green, blue, .8);
-  console.log(0.45 * m.sin(progress))
-
   // gl.COLOR_BUFFER_BIT | gl.COLOR_BUFFER_BIT == 4**7
-  gl.clear(4**7) // note: not shortened
+  //gl.clear(4**7) // note: not shortened
 
+  roundedProgress = ~~progress;
   progress = (performance.now() - startTime) / 1e3;
 
-  rotate(yRotationMatrix, identityMatrix, progress / 0.5, 0, 1, 0);
+  var red = m.abs(0.45 * m.sin(progress));
+  var green = m.abs(0.24 * m.sin(progress));
+  var blue = m.abs(0.17 * m.sin(progress));
+  if (progress < 5) {
+    textArea.innerHTML = '';
+    red = green = blue = (progress) * 0.1;
+    colorChanger(red, green, blue);
+  } else if (progress > 45) {
+    colorChanger();
+  } else {
+    // Helevetimmoinen väläkytys
+    if (~~((progress * 100) % 2)) {
+      colorChanger(1, 1, 1)
+    } else {
+      colorChanger(0,0,0)
+    }
+  }
+
+  // Rotate to identity matrix
+  gl.um(matWorldUniformLocation, glFalse, identityMatrix); // um: ƒ uniformMatrix4fv()
+  gl.uniform1f(objectPickerUniform, 0); // note: not shortened
+  gl.uniform3f(ambientColorUniform, red, green, blue);
+  var backgroundBuffer = gl.cB();
+  // gl.ARRAY_BUFFER = 34962
+  // gl.STATIC_DRAW = 35044
+  gl.bf(34962, backgroundBuffer);
+  // Draw background
+  gl.bD(
+    34962,
+    new Float32Array([
+      -10.0, -100.0,
+      100.0, -10.0,
+      -10.0, 100.0,
+      -10.0, 100.0,
+      100.0, -10.0,
+      100.0, 100.0,
+    ]),
+    35044
+  );
+  gl.vA( // vA: ƒ vertexAttribPointer()
+    positionAttributeLocation, // Attribute location
+    2, // Number of elements per attribute
+    5126, // Type of elements (5126 = gl.FLOAT)
+    glFalse,
+    8, // Size of an individual vertex (2 * Float32Array.BYTES_PER_ELEMENT)
+    0
+  );
+  gl.eV(positionAttributeLocation);
+  gl.de(4, 6, 5123, 0); // gl.TRIANGLES = 4, gl.UNSIGNED_SHORT = 5123
+
+  // Rotate the object
+  rotate(yRotationMatrix, identityMatrix, progress * 2, 0, 1, 0);
   rotate(xRotationMatrix, identityMatrix, m.sin(progress)/1.5, 1, 0, 0);
   multiply(worldMatrix, yRotationMatrix, xRotationMatrix);
   gl.um(matWorldUniformLocation, glFalse, worldMatrix); // um: ƒ uniformMatrix4fv()
 
   gl.depthFunc(gl.LEQUAL); // Near things obscure far things
 
-  // Räjäytys
-  if (progress > 20) {
-    var i = ~~(m.random()*vertices[1].length);
-    vertices[0][i] = vertices[0][i] + (m.sin(progress)*0.1);
-    vertices[1][i] = vertices[1][i] + (m.sin(progress)*0.1);
+  if (progress > 5) {
+    const textArray = "Kerro osoite,Voitteko tulla pian?,On ihan kurkku auki,VERTA TULEE,Kuka siihen iski?,Henkirikos,Paina haavakohtaa,Verta on tosi paljon,Lopeta!,Puukotettu kaulaan,Poliisipartio on matkalla,Ambulanssi nopeasti,Se kuolee tuo mies".split(',')
+    textArea.style.color = 'white';
+    textArea.innerHTML = textArray[roundedProgress % textArray.length];
+    textArea.style.left = width * rng();
+    textArea.style.top = height * rng();
   }
-  if (progress > 40) {
+  if (progress > 25) {
+    // the amazing exploding man
+    var i = ~~(rng()*vertices[1].length);
+    vertices[0][i] = vertices[0][i] + (m.sin(progress)*.1);
+    vertices[1][i] = vertices[1][i] + (m.sin(progress)*.1);
+  }
+  if (progress > 45) {
+    // The end
     clearInterval(soundInterval);
     gl.co(0,0,0,1);
     gl.clear(4**7);
+    textArea.innerHTML = '';
     setTimeout(() => {
       oscillator.stop();
     }, 4000)
     return;
   }
-  const textArray = [
-    '',
-  ];
-  textArea.innerHTML = textArray[0];
 
   if (progress - ~~progress < 0.01) { // DEBUG
     console.log(~~progress) // DEBUG
@@ -286,26 +347,11 @@ r = () => {
 
     var positionAttributeLocation = gl.gr(program, 'vp'); // gr: ƒ getAttribLocation()
     var normalAttributeLocation = gl.gr(program, 'vn');
+    gl.uniform1f(objectPickerUniform, 2); // note: not shortened
 
     vertexBuffer[i] = gl.cB(); // cB: ƒ createBuffer()
     indexBuffer[i] = gl.cB();
     normalBuffer[i] = gl.cB();
-
-    /*var buffer = gl.cB();
-    // gl.ARRAY_BUFFER = 34962
-    // gl.STATIC_DRAW = 35044
-    gl.bf(34962, buffer);
-    gl.bD(
-      34962,
-      new Float32Array([
-        -1.0, -1.0,
-        1.0, -1.0,
-        -1.0, 1.0,
-        -1.0, 1.0,
-        1.0, -1.0,
-        1.0, 1.0]),
-      35044
-    );*/
 
     // Bind vertex buffer
     // gl.StaticDrawConstant = 35044, gl.ArrayBufferConstant = 34962;
@@ -320,7 +366,6 @@ r = () => {
       0
     );
     gl.eV(positionAttributeLocation); // eV: ƒ enableVertexAttribArray()
-
 
     // Bind index buffer
     // gl.ElementArrayBuffer = 34963;
@@ -370,8 +415,8 @@ s = () => {
   s = () => {}; // ':D
   soundInterval = setInterval(() => {
     var time = performance.now() - startTime;
-    oscillator.detune.value = oscillator.detune.value + m.sin(time) * 25;
-    oscillator.frequency.value = m.cos(time) * 50 + (progress * 25);
+    oscillator.detune.value = oscillator.detune.value + m.sin(time) * 12;
+    oscillator.frequency.value = m.cos(time) * 48 + (progress * 24);
   }, 160)
 }
 

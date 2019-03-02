@@ -143,6 +143,16 @@ gulp.task('watch', () => {
 });
 
 /**
+ * Automagic production build watcher
+ */
+gulp.task('prod_watch', () => {
+  const watcher = gulp.watch('./src/*', gulp.series('prod'));
+  return watcher.on('change', event => {
+    console.log(`File ${event.path} was ${event.type}, running tasks...`);
+  });
+});
+
+/**
  * Queued tasks
  */
 gulp.task('build', gulp.series('build_development', 'filesize'));

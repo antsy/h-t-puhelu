@@ -26,6 +26,7 @@ open `build\index.html` with Chrome to view
 * https://thebookofshaders.com/11/
 * https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Creating_3D_objects_using_WebGL
 * https://webgl2fundamentals.org/
+* https://www.khronos.org/files/webgl20-reference-guide.pdf
 
 * https://medium.com/@omar4ur/flat-shading-in-webgl-with-playcanvas-a-quick-tip-97d1bd85258f
 * https://www.shadertoy.com/view/ldf3RN (bokeh blur)
