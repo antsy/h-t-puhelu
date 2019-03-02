@@ -54,3 +54,5 @@ Like any project with a strict deadline it started with planning and ambitions a
 * https://code.google.com/archive/p/jssfx/
 * https://github.com/Siorki/RegPack
 
+Oh yeah, you must checkout RegPack to lib-folder to compile the production build. (do `git clone https://github.com/Siorki/RegPack.git`)
+

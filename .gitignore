@@ -5,3 +5,4 @@
 lib/*.exe
 lib/*/
 failed_experiments
+publish
